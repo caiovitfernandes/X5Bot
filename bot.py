@@ -35,7 +35,7 @@ async def on_message(message):
         team_1 = members[:len(members)//2]
         team_2 = members[len(members)//2:]
 
-        confirm_message = await message.channel.send(f'Separar os jogadores em equipes 1 e 2?\nJogadores da equipe 1: {", ".join([member.name for member in team_1])}\nJogadores da equipe 2: {", ".join([member.name for member in team_2])}')
+        confirm_message = await message.channel.send(f'Separar os jogadores em equipes 1 e 2?\nEquipe 1: {", ".join([member.name for member in team_1])}\nEquipe 2: {", ".join([member.name for member in team_2])}')
         await confirm_message.add_reaction("✅")
         await confirm_message.add_reaction("❌")
 
@@ -57,5 +57,17 @@ async def on_message(message):
             await message.channel.send("Jogadores separados em equipes.")
         else:
             await message.channel.send("Separação de jogadores cancelada.")
+
+    elif message.content.startswith("!end"):
+        out_channel = discord.utils.get(message.guild.voice_channels, name="-De fora- Inhouse")
+        team_1_channel = discord.utils.get(message.guild.voice_channels, name="Equipe 1")
+        for member in team_1_channel.members:
+            await member.move_to(out_channel)
+
+        team_2_channel = discord.utils.get(message.guild.voice_channels, name="Equipe 2")
+        for member in team_2_channel.members:
+            await member.move_to(out_channel)
+
+        await message.channel.send("Jogadores movidos para o canal de voz '-De fora- Inhouse'.") 
 
 client.run('MTA3MTU0MzYxNjk2MDQ4MzM2OQ.G2CJTn.LMNPIgmvlcpNvFyYZfnX3xbI3H1Q7kPA-leIIs')
