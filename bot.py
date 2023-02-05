@@ -59,15 +59,38 @@ async def on_message(message):
             await message.channel.send("Separação de jogadores cancelada.")
 
     elif message.content.startswith("!end"):
-        out_channel = discord.utils.get(message.guild.voice_channels, name="-De fora- Inhouse")
-        team_1_channel = discord.utils.get(message.guild.voice_channels, name="Equipe 1")
-        for member in team_1_channel.members:
-            await member.move_to(out_channel)
+        voice_channel_team_1 = discord.utils.get(message.guild.voice_channels, name='Equipe 1')
+        voice_channel_team_2 = discord.utils.get(message.guild.voice_channels, name='Equipe 2')
+        voice_channel_out = discord.utils.get(message.guild.voice_channels, name='-De fora- Inhouse')
 
-        team_2_channel = discord.utils.get(message.guild.voice_channels, name="Equipe 2")
-        for member in team_2_channel.members:
-            await member.move_to(out_channel)
+        members_team_1 = voice_channel_team_1.members
+        members_team_2 = voice_channel_team_2.members
 
-        await message.channel.send("Jogadores movidos para o canal de voz '-De fora- Inhouse'.") 
+        confirm_message = await message.channel.send(f'Qual equipe venceu o jogo?\nEquipe 1: 🔵\nEquipe 2: 🔴')
+        await confirm_message.add_reaction("🔵")
+        await confirm_message.add_reaction("🔴")
+
+        def check(reaction, user):
+            return user == message.author and str(reaction.emoji) in ["🔵", "🔴"]
+
+        try:
+            reaction, user = await client.wait_for('reaction_add', timeout=30.0, check=check)
+        except asyncio.TimeoutError:
+            await confirm_message.delete()
+            await message.channel.send("Tempo esgotado para confirmação.")
+            return
+
+        if str(reaction.emoji) == "🔵":
+            for member in members_team_1:
+                await member.move_to(voice_channel_out)
+            for member in members_team_2:
+                await member.move_to(voice_channel_out)
+            await message.channel.send("Equipe 1 venceu o jogo.")
+        elif str(reaction.emoji) == "🔴":
+            for member in members_team_2:
+                await member.move_to(voice_channel_out)
+            for member in members_team_1:
+                await member.move_to(voice_channel_out)
+            await message.channel.send("Equipe 2 venceu o jogo.")
 
 client.run('MTA3MTU0MzYxNjk2MDQ4MzM2OQ.G2CJTn.LMNPIgmvlcpNvFyYZfnX3xbI3H1Q7kPA-leIIs')
