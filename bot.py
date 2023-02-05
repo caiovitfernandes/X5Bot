@@ -37,6 +37,15 @@ def add_user(user_id, username):
             json.dump(users, f)
 
 
+def classificar():
+    with open("users.json", "r") as file:
+        users = json.load(file)
+
+    # Ordena os usuários pelo winrate (com vitórias como critério de desempate)
+    sorted_users = sorted(users.items(), key=lambda x: (-x[1]["vitorias"], x[1]["winrate"]))
+
+    with open("users.json", "w") as file:
+        json.dump(dict(sorted_users), file, indent=4)
 
 @client.event
 async def on_ready():
@@ -46,9 +55,9 @@ async def on_ready():
             json.load(f)
     except FileNotFoundError:
         create_user_file()
-
-    for member in client.get_all_members():
-        add_user(str(member.id), member.name)
+        for member in client.get_all_members():
+            add_user(str(member.id), member.name)
+    
 
 @client.event
 async def on_member_join(member):
@@ -176,5 +185,9 @@ async def on_message(message):
                 file.close()
     
             calculate_winrate(usuarios)
+        classificar()
+
+        
+        
 
 client.run('MTA3MTU0MzYxNjk2MDQ4MzM2OQ.G2CJTn.LMNPIgmvlcpNvFyYZfnX3xbI3H1Q7kPA-leIIs')
