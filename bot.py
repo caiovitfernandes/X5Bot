@@ -1,5 +1,6 @@
 import discord
 import random
+import json
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -7,10 +8,51 @@ intents.members = True
 
 client = discord.Client(intents=intents)
 
+def create_user_file():
+    users = {}
+    with open('users.json', 'w') as f:
+        json.dump(users, f)
+
+def calculate_winrate(usuarios):
+    for user in usuarios:
+        vitorias = usuarios[user]["vitorias"]
+        derrotas = usuarios[user]["derrotas"]
+        total = vitorias + derrotas
+        if total == 0:
+            winrate = 0
+        else:
+            winrate = (vitorias / (vitorias + derrotas)) * 100
+        usuarios[user]["winrate"] = winrate
+
+    with open("users.json", "w") as file:
+        json.dump(usuarios, file, indent=4)
+        file.close()
+
+def add_user(user_id, username):
+    with open('users.json', 'r') as f:
+        users = json.load(f)
+    if user_id not in users:
+        users[username] = {"vitorias": 0, "derrotas": 0, "winrate": 0}
+        with open('users.json', 'w') as f:
+            json.dump(users, f)
+
+
+
 @client.event
 async def on_ready():
     print(f'Conectado a: {client.user}')
+    try:
+        with open('users.json', 'r') as f:
+            json.load(f)
+    except FileNotFoundError:
+        create_user_file()
 
+    for member in client.get_all_members():
+        add_user(str(member.id), member.name)
+
+@client.event
+async def on_member_join(member):
+    add_user(str(member.id), member.name)
 
 @client.event
 async def on_message(message):
@@ -86,11 +128,53 @@ async def on_message(message):
             for member in members_team_2:
                 await member.move_to(voice_channel_out)
             await message.channel.send("Equipe 1 venceu o jogo.")
+
+            with open("users.json", "r") as file:
+                usuarios = json.load(file)
+
+            for member in members_team_1:
+                if member.name in usuarios:
+                    usuarios[member.name]["vitorias"] += 1
+                else:
+                    usuarios[member.name] = {"vitorias": 1, "derrotas": 0}
+
+            for member in members_team_2:
+                if member.name in usuarios:
+                    usuarios[member.name]["derrotas"] += 1
+                else:
+                    usuarios[member.name] = {"vitorias": 0, "derrotas": 1}
+
+            with open("users.json", "w") as file:
+                json.dump(usuarios, file)
+            
+            calculate_winrate(usuarios)
+
         elif str(reaction.emoji) == "🔴":
             for member in members_team_2:
                 await member.move_to(voice_channel_out)
             for member in members_team_1:
                 await member.move_to(voice_channel_out)
             await message.channel.send("Equipe 2 venceu o jogo.")
+
+            with open("users.json", "r") as file:
+                usuarios = json.load(file)
+
+            for member in members_team_2:
+                if member.name in usuarios:
+                    usuarios[member.name]["vitorias"] += 1
+                else:
+                    usuarios[member.name] = {"vitorias": 1, "derrotas": 0}
+
+            for member in members_team_1:
+                if member.name in usuarios:
+                    usuarios[member.name]["derrotas"] += 1
+                else:
+                    usuarios[member.name] = {"vitorias": 0, "derrotas": 1}
+
+            with open("users.json", "w") as file:
+                json.dump(usuarios, file)
+                file.close()
+    
+            calculate_winrate(usuarios)
 
 client.run('MTA3MTU0MzYxNjk2MDQ4MzM2OQ.G2CJTn.LMNPIgmvlcpNvFyYZfnX3xbI3H1Q7kPA-leIIs')
