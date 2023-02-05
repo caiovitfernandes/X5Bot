@@ -57,7 +57,6 @@ async def on_ready():
         create_user_file()
         for member in client.get_all_members():
             add_user(str(member.id), member.name)
-    
 
 @client.event
 async def on_member_join(member):
@@ -187,7 +186,26 @@ async def on_message(message):
             calculate_winrate(usuarios)
         classificar()
 
-        
-        
+    if message.content.startswith('!tabela'):
+        # Abrindo o arquivo users.json
+        with open("users.json", "r") as f:
+            users = json.load(f)
+
+        # Encontrando todos os membros no canal de voz
+        voice_channel = message.author.voice.channel
+        voice_channel_members = voice_channel.members
+
+        # Armazenando apenas os usuários com informações no arquivo
+        relevant_users = {username: users[username] for username in users if username in [member.name for member in voice_channel_members]}
+
+        # Ordenando os usuários pelo winrate, com vitórias como critério de desempate
+        sorted_users = sorted(relevant_users.items(), key=lambda x: (-x[1]["winrate"], -x[1]["vitorias"]))
+
+        # Enviando a classificação no canal
+        leaderboard = "Tabela de classificação:\n"
+        for i, (username, user_info) in enumerate(sorted_users):
+            leaderboard += f"{i + 1}. {username}: Vitórias {user_info['vitorias']}, Derrotas {user_info['derrotas']}, Winrate {user_info['winrate']}%\n"
+
+        await message.channel.send(leaderboard)
 
 client.run('MTA3MTU0MzYxNjk2MDQ4MzM2OQ.G2CJTn.LMNPIgmvlcpNvFyYZfnX3xbI3H1Q7kPA-leIIs')
