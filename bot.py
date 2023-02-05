@@ -47,6 +47,33 @@ def classificar():
     with open("users.json", "w") as file:
         json.dump(dict(sorted_users), file, indent=4)
 
+def balancear(members):
+    with open('users.json', 'r') as file:
+        users = json.load(file)
+
+    members_with_winrates = [(member, users[member.name]['winrate']) for member in members]
+    members_with_winrates.sort(key=lambda x: x[1], reverse=True)
+
+    half_length = len(members_with_winrates) // 2
+    first_half = members_with_winrates[:half_length]
+    second_half = members_with_winrates[half_length:]
+
+    first_half.sort(key=lambda x: x[1], reverse=False)
+    second_half.sort(key=lambda x: x[1], reverse=True)
+
+    first_half_index, second_half_index = 0, 0
+    while first_half_index < len(first_half) and second_half_index < len(second_half):
+        if abs(first_half[first_half_index][1] - second_half[second_half_index][1]) > abs(first_half[first_half_index][1] - second_half[second_half_index + 1][1]):
+            first_half[first_half_index], second_half[second_half_index + 1] = second_half[second_half_index + 1], first_half[first_half_index]
+            second_half_index += 1
+        else:
+            first_half[first_half_index], second_half[second_half_index] = second_half[second_half_index], first_half[first_half_index]
+            second_half_index += 1
+            first_half_index += 1
+
+    members[:half_length] = [x[0] for x in first_half]
+    members[half_length:] = [x[0] for x in second_half]
+
 @client.event
 async def on_ready():
     print(f'Conectado a: {client.user}')
@@ -81,7 +108,7 @@ async def on_message(message):
         team_1_channel = discord.utils.get(message.guild.voice_channels, name='Equipe 1')
         team_2_channel = discord.utils.get(message.guild.voice_channels, name='Equipe 2')
 
-        random.shuffle(members)
+        balancear(members)
         team_1 = members[:len(members)//2]
         team_2 = members[len(members)//2:]
 
