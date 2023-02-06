@@ -78,7 +78,7 @@ def tabela20():
     with open('users.json', 'r') as file:
         data = json.load(file)
     
-    sorted_users = sorted(data.items(), key=lambda x: (-x[1]["winrate"], x[1]["pontos"]))
+    sorted_users = sorted(data.items(), key=lambda x: (-x[1]["pontos"], -x[1]["winrate"], -x[1]["vitorias"], x[1]["derrotas"]))
     return sorted_users[:20]
 
 @client.event
@@ -266,7 +266,7 @@ async def on_message(message):
         # Enviando a classificação no canal
         leaderboard = "Tabela de classificação:\n"
         for i, (username, user_info) in enumerate(sorted_users):
-            leaderboard += f"{i + 1}. {username}:\t Pontos: {user_info['pontos']}\t Vitórias: {user_info['vitorias']}\t Derrotas: {user_info['derrotas']}\t Winrate: {user_info['winrate']}%\n"
+            leaderboard += f"{i + 1}.\t {username}:\t\t Pontos: \t{user_info['pontos']}\t\t Vitórias: \t{user_info['vitorias']}\t\t Derrotas: \t{user_info['derrotas']}\t\t Winrate: \t{user_info['winrate']}%\n"
 
         await message.channel.send(leaderboard)
     
@@ -275,7 +275,7 @@ async def on_message(message):
         # Construir a tabela de classificação com os 20 primeiros colocados
         leaderboard = "Tabela de Classificação:\n"
         for i, (username, user_data) in enumerate(top):
-            leaderboard += f"{i + 1}. {username}:\t Pontos: {user_data['pontos']}\t Vitórias: {user_data['vitorias']}\t Derrotas: {user_data['derrotas']}\t Winrate: {user_data['winrate']}%\n"
+            leaderboard += f"{i + 1}. {username}:\t\t Pontos: \t{user_data['pontos']}\t\t Vitórias: \t{user_data['vitorias']}\t\t Derrotas: \t{user_data['derrotas']}\t\t Winrate: \t{user_data['winrate']}%\n"
 
         # Enviar a tabela de classificação para o canal de chat
         await message.channel.send(leaderboard)
