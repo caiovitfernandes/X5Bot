@@ -32,7 +32,7 @@ def add_user(user_id, username):
     with open('users.json', 'r') as f:
         users = json.load(f)
     if user_id not in users:
-        users[username] = {"vitorias": 0, "derrotas": 0, "winrate": 0}
+        users[username] = {"pontos": 0,"vitorias": 0, "derrotas": 0, "winrate": 0}
         with open('users.json', 'w') as f:
             json.dump(users, f)
 
@@ -42,7 +42,7 @@ def classificar():
         users = json.load(file)
 
     # Ordena os usuários pelo winrate (com vitórias como critério de desempate)
-    sorted_users = sorted(users.items(), key=lambda x: (-x[1]["vitorias"], x[1]["winrate"]))
+    sorted_users = sorted(users.items(), key=lambda x: (-x[1]["winrate"], x[1]["pontos"]))
 
     with open("users.json", "w") as file:
         json.dump(dict(sorted_users), file, indent=4)
@@ -94,7 +94,7 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    if message.content.startswith('!start'):
+    if message.content.startswith('!x5'):
         voice_channel = message.author.voice.channel
         if not voice_channel:
             await message.channel.send("Você não está em um canal de voz.")
@@ -135,7 +135,16 @@ async def on_message(message):
         else:
             await message.channel.send("Separação de jogadores cancelada.")
 
-    elif message.content.startswith("!end"):
+    elif message.content.startswith("!gg"):
+        voice_channel = message.author.voice.channel
+        if not voice_channel:
+            await message.channel.send("Você não está em um canal de voz.")
+            return
+
+        members = voice_channel.members
+        if not members:
+            await message.channel.send("Não há nenhum jogador na sala de voz.")
+            return
         voice_channel_team_1 = discord.utils.get(message.guild.voice_channels, name='Equipe 1')
         voice_channel_team_2 = discord.utils.get(message.guild.voice_channels, name='Equipe 2')
         voice_channel_out = discord.utils.get(message.guild.voice_channels, name='-De fora- Inhouse')
@@ -170,14 +179,19 @@ async def on_message(message):
             for member in members_team_1:
                 if member.name in usuarios:
                     usuarios[member.name]["vitorias"] += 1
+                    usuarios[member.name]["pontos"] += 10
                 else:
-                    usuarios[member.name] = {"vitorias": 1, "derrotas": 0}
+                    usuarios[member.name] = {"pontos": 10, "vitorias": 1, "derrotas": 0}
 
             for member in members_team_2:
                 if member.name in usuarios:
                     usuarios[member.name]["derrotas"] += 1
+                    if usuarios[member.name]["pontos"] > 7:
+                        usuarios[member.name]["pontos"] -= 8
+                    else:
+                        usuarios[member.name]["pontos"] = 0
                 else:
-                    usuarios[member.name] = {"vitorias": 0, "derrotas": 1}
+                    usuarios[member.name] = {"pontos": 0,"vitorias": 0, "derrotas": 1}
 
             with open("users.json", "w") as file:
                 json.dump(usuarios, file)
@@ -197,14 +211,19 @@ async def on_message(message):
             for member in members_team_2:
                 if member.name in usuarios:
                     usuarios[member.name]["vitorias"] += 1
+                    usuarios[member.name]["pontos"] += 10
                 else:
-                    usuarios[member.name] = {"vitorias": 1, "derrotas": 0}
+                    usuarios[member.name] = {"pontos": 10, "vitorias": 1, "derrotas": 0}
 
             for member in members_team_1:
                 if member.name in usuarios:
                     usuarios[member.name]["derrotas"] += 1
+                    if usuarios[member.name]["pontos"] > 7:
+                        usuarios[member.name]["pontos"] -= 8
+                    else:
+                        usuarios[member.name]["pontos"] = 0
                 else:
-                    usuarios[member.name] = {"vitorias": 0, "derrotas": 1}
+                    usuarios[member.name] = {"pontos": 0,"vitorias": 0, "derrotas": 1}
 
             with open("users.json", "w") as file:
                 json.dump(usuarios, file)
@@ -213,7 +232,16 @@ async def on_message(message):
             calculate_winrate(usuarios)
         classificar()
 
-    if message.content.startswith('!tabela'):
+    if message.content.startswith('!rank'):
+        voice_channel = message.author.voice.channel
+        if not voice_channel:
+            await message.channel.send("Você não está em um canal de voz.")
+            return
+
+        members = voice_channel.members
+        if not members:
+            await message.channel.send("Não há nenhum jogador na sala de voz.")
+            return
         # Abrindo o arquivo users.json
         with open("users.json", "r") as f:
             users = json.load(f)
@@ -226,13 +254,13 @@ async def on_message(message):
         relevant_users = {username: users[username] for username in users if username in [member.name for member in voice_channel_members]}
 
         # Ordenando os usuários pelo winrate, com vitórias como critério de desempate
-        sorted_users = sorted(relevant_users.items(), key=lambda x: (-x[1]["winrate"], -x[1]["vitorias"]))
+        sorted_users = sorted(relevant_users.items(), key=lambda x: (-x[1]["pontos"], -x[1]["winrate"]))
 
         # Enviando a classificação no canal
         leaderboard = "Tabela de classificação:\n"
         for i, (username, user_info) in enumerate(sorted_users):
-            leaderboard += f"{i + 1}. {username}: Vitórias {user_info['vitorias']}, Derrotas {user_info['derrotas']}, Winrate {user_info['winrate']}%\n"
+            leaderboard += f"{i + 1}. {username}:\t Pontos: {user_info['pontos']}\t Vitórias: {user_info['vitorias']}\t Derrotas: {user_info['derrotas']}\t Winrate: {user_info['winrate']}%\n"
 
         await message.channel.send(leaderboard)
 
-client.run('MTA3MTU0MzYxNjk2MDQ4MzM2OQ.G2CJTn.LMNPIgmvlcpNvFyYZfnX3xbI3H1Q7kPA-leIIs')
+client.run('MTA3MjExMjM0MDUwMzM4NDA3NA.Gzt_Lx.ZRH0HoSOa9V2VvZ9q_WR-AUtzYJ_4-7pQ_85OA')

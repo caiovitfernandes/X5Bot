@@ -1,8 +1,8 @@
 {
     "caiovitfernandes": {
-        "vitorias": 3,
-        "derrotas": 2,
-        "winrate": 60.0
+        "vitorias": 0,
+        "derrotas": 0,
+        "winrate": 0
     },
     "X5Bot": {
         "vitorias": 0,
@@ -280,6 +280,11 @@
         "winrate": 0
     },
     "Rnarcos": {
+        "vitorias": 0,
+        "derrotas": 0,
+        "winrate": 0
+    },
+    "PontesJ": {
         "vitorias": 0,
         "derrotas": 0,
         "winrate": 0
