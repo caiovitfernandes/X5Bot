@@ -77,8 +77,8 @@ def balancear(members):
 def tabela20():
     with open('users.json', 'r') as file:
         data = json.load(file)
-    
-    sorted_users = sorted(data.items(), key=lambda x: (-x[1]["pontos"], -x[1]["winrate"], -x[1]["vitorias"], x[1]["derrotas"]))
+    played = [(name, player) for name, player in data.items() if player["vitorias"] + player["derrotas"] > 0]
+    sorted_users = sorted(played, key=lambda x: (-x[1]["pontos"], -x[1]["winrate"], -x[1]["vitorias"], x[1]["derrotas"]))
     return sorted_users[:20]
 
 @client.event
