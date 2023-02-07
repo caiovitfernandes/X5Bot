@@ -1,6 +1,7 @@
 import discord
 import random
 import json
+import math
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -47,32 +48,21 @@ def classificar():
     with open("users.json", "w") as file:
         json.dump(dict(sorted_users), file, indent=4)
 
+import json
+
 def balancear(members):
-    with open('users.json', 'r') as file:
-        users = json.load(file)
+    with open("users.json", "r") as f:
+        users = json.load(f)
 
-    members_with_winrates = [(member, users[member.name]['winrate']) for member in members]
-    members_with_winrates.sort(key=lambda x: x[1], reverse=True)
-
-    half_length = len(members_with_winrates) // 2
-    first_half = members_with_winrates[:half_length]
-    second_half = members_with_winrates[half_length:]
-
-    first_half.sort(key=lambda x: x[1], reverse=False)
-    second_half.sort(key=lambda x: x[1], reverse=True)
-
-    first_half_index, second_half_index = 0, 0
-    while first_half_index < len(first_half) and second_half_index < len(second_half):
-        if abs(first_half[first_half_index][1] - second_half[second_half_index][1]) > abs(first_half[first_half_index][1] - second_half[second_half_index + 1][1]):
-            first_half[first_half_index], second_half[second_half_index + 1] = second_half[second_half_index + 1], first_half[first_half_index]
-            second_half_index += 1
-        else:
-            first_half[first_half_index], second_half[second_half_index] = second_half[second_half_index], first_half[first_half_index]
-            second_half_index += 1
-            first_half_index += 1
-
-    members[:half_length] = [x[0] for x in first_half]
-    members[half_length:] = [x[0] for x in second_half]
+    members = [member for member in members if str(member.id) in users]
+    members = sorted(members, key=lambda x: (users[str(x.id)]["pontos"], users[str(x.id)]["winrate"], users[str(x.id)]["vitorias"], users[str(x.id)]["derrotas"]), reverse=True)
+    half = len(members) // 2
+    team_1 = members[:half]
+    team_2 = members[half:][::-1]
+    members[::2] = team_1
+    members[1::2] = team_2
+    
+    return members
 
 def tabela20():
     with open('users.json', 'r') as file:
