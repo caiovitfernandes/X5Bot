@@ -314,4 +314,6 @@ async def on_message(message):
 
         # Enviar a tabela de classificação para o canal de chat
         await message.channel.send(leaderboard)
-client.run('MTA3MTU0MzYxNjk2MDQ4MzM2OQ.G57jVj.z8liH7qJ73yVBNE4WBkh_FUUdSFEeyLFiAdqtk')
+with open("token.txt", "r") as arquivo:
+    token = arquivo.readline()
+client.run(token)
