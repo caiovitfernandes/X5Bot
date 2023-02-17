@@ -35,7 +35,7 @@ def calculate_winrate(usuarios, id):
 def add_user(user_id, username, id):
     with open(f'{id}.json', 'r') as f:
         users = json.load(f)
-    if user_id not in users:
+    if username not in users:
         users[username] = {"pontos": 0,"vitorias": 0, "derrotas": 0, "winrate": 0}
         with open(f'{id}.json', 'w') as f:
             json.dump(users, f)
@@ -62,17 +62,39 @@ def balancear(members, id):
         users = json.load(file)
     members = [member for member in members if str(member.name) in users]
     members = sorted(members, key=lambda x: (users[str(x.name)]["pontos"], users[str(x.name)]["winrate"], users[str(x.name)]["vitorias"], users[str(x.name)]["derrotas"]), reverse=True)
-
     half = len(members)//2
-    team_1 = members[:half]
-    team_2 = list(reversed(members[half:]))
-    team_intercalated = []
-    for i in range(len(team_2)):
-        if len(team_1) > i:
-            team_intercalated.append(team_1[i])
-        if i < len(team_2):
-            team_intercalated.append(team_2[i])
-    return team_intercalated
+    team_1 = []
+    team_2 = []
+    geral = []
+    pontos1 = 0
+    pontos2 = 0
+    for i in range(len(members)):
+        if users[str(members[i].name)]["pontos"] > 0:
+            if pontos1 != pontos2:
+                if pontos1 > pontos2:
+                    team_1.append(members[i])
+                else:
+                    team_2.append(members[i])
+            else:
+                if len(team_1) > len(team_2):
+                    team_2.append(members[i])
+                elif len(team_2) > len(team_1):
+                    team_1.append(members[i]) 
+                else:
+                    team_1.append(members[i])
+        else:
+            if len(team_1) > len(team_2):
+                team_2.append(members[i])
+            elif len(team_2) > len(team_1):
+                team_1.append(members[i]) 
+            else:
+                team_1.append(members[i])
+    for i in range(len(members)):
+        if i < len(team_1):
+            geral.append(team_1[i])
+        else:
+            geral.append(team_2[i - len(team_1)])
+    return geral
 
 def get_server_id(ctx):
     return ctx.id
@@ -141,7 +163,8 @@ async def on_guild_join(guild):
 
 @client.event
 async def on_member_join(member):
-    add_user(str(member.id), member.name, id)
+    print(f"O usuário {member.name} entrou no servidor")
+    add_user(str(member.id), member.name, get_server_id(member.guild))
 
 @client.event
 async def on_message(message):
