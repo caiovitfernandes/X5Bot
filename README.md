@@ -38,3 +38,5 @@ Em seguida, verifique se no seu servidor do discord foi criado um agrupamento de
 * !gg : Encerra as partidas e move os jogadores para o Lobby. Ao encerrar a partida, o bot pergunta qual dos dois times saiu vitorioso. É importante marcar o time correto para que as estatísticas sejam atualizadas da maneira correta. É possível setar as estatísticas manualmente no arquivo ID_DO_SERVER.json (para quem clonou o repositório e está hosteando o bot)
 * !rank : Exibe uma tabela de classificação que mostra apenas as estatísticas dos jogadores presentes na sala
 * !top : Exibe a tabela de classificação com os 20 primeiros classificados do server (exibe apenas jogadores que já participaram de pelo menos uma partida)
+* !eu : Exibe as estatísticas do jogador que enviou o comando
+* !bo : Menciona todos os membros do servidor em uma mensagem chamando para jogar

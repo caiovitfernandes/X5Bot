@@ -167,7 +167,7 @@ async def on_guild_join(guild):
     await guild.create_text_channel(name="💬 Comandos X5", category=categoria)
     for canal in canais:
         await guild.create_voice_channel(name=canal, category=categoria)
-    ola = await discord.utils.get(guild.text_channels, name="💬-comandos-x5").send("Olá! Eu sou o bot X5, eu fui criado para ajudar vocês a jogarem partidas personalizadas online de maneira justa e organizada. Comigo, vocês podem iniciar partidas, ver as estatísticas dos jogadores que estão na mesma sala e até mesmo ver a tabela de classificação do server.\nPara começar a jogar, basta entrar em uma das Salas 🔀 digitar o comando \"!x5\". Eu vou balancear os jogadores da sala e separá-los em equipes 🔵🔴. Quando a partida terminar, vocês podem usar o comando \"!gg\" para que eu salve o resultado e atualize as estatísticas e mova os jogadores para o Lobby 🏰.\nSe quiserem ver as estatísticas de quem está na sala com você, basta usar o comando \"!rank\". E se quiserem ver a tabela de classificação do server, basta digitar \"!top\" que eu mostro pra vocês os 20 primeiros colocados. Lembrem-se: para utilizar os comando !x5, !gg e !rank é necessário estar nas salas de voz.\nEu espero que vocês aproveitem as partidas com o meu auxílio e boa sorte a todos!")
+    ola = await discord.utils.get(guild.text_channels, name="💬-comandos-x5").send("Olá! Eu sou o bot X5, eu fui criado para ajudar vocês a jogarem partidas personalizadas online de maneira justa e organizada. Comigo, vocês podem iniciar partidas, ver as estatísticas dos jogadores que estão na mesma sala e até mesmo ver a tabela de classificação do server.\nPara começar a jogar, basta entrar em uma das Salas 🔀 digitar o comando \"!x5\". Eu vou balancear os jogadores da sala e separá-los em equipes 🔵🔴. Quando a partida terminar, vocês podem usar o comando \"!gg\" para que eu salve o resultado e atualize as estatísticas e mova os jogadores para o Lobby 🏰.\nSe quiserem ver as estatísticas de quem está na sala com você, basta usar o comando \"!rank\". E se quiserem ver a tabela de classificação do server, basta digitar \"!top\" que eu mostro pra vocês os 20 primeiros colocados. Para visualizar apenas as suas estatísticas, basta mandar o comando \"!eu\". Para chamar todo mundo para jogar, basta enviar o comando \"!bo\". Lembrem-se: para utilizar os comando !x5, !gg e !rank é necessário estar nas salas de voz.\nEu espero que vocês aproveitem as partidas com o meu auxílio e boa sorte a todos!")
     await ola.pin()
 
 
@@ -334,9 +334,41 @@ async def on_message(message):
         # Enviando a classificação no canal
         leaderboard = "Tabela de classificação da sala:\n"
         for i, (username, user_info) in enumerate(sorted_users):
-            leaderboard += f"{i + 1}.\t {username}:\t\t Pontos: \t{user_info['pontos']}\t\t Vitórias: \t{user_info['vitorias']}\t\t Derrotas: \t{user_info['derrotas']}\t\t Winrate: \t{user_info['winrate']}%\n"
+            membro = await get_member_by_username(message.guild, username)
+            leaderboard += f"{i + 1}.\t {membro.mention}:\t\t Pontos: \t{user_info['pontos']}\t\t Vitórias: \t{user_info['vitorias']}\t\t Derrotas: \t{user_info['derrotas']}\t\t Winrate: \t{user_info['winrate']}%\n"
 
         await message.channel.send(leaderboard)
+    
+    if message.content.startswith('!eu'):
+        with open(f"{get_server_id(message.guild)}.json", "r") as f:
+            users = json.load(f)
+
+        # Obtendo o username do autor da mensagem
+        username = str(message.author.name)
+
+        # Verificando se o autor da mensagem tem informações no arquivo
+        if username not in users:
+            await message.channel.send(f"{username} não tem informações registradas.")
+            return
+
+        # Obtendo as informações do autor da mensagem
+        user_info = users[username]
+
+        # Montando a mensagem com as estatísticas do autor da mensagem
+        leaderboard = f"Estatísticas de {message.author.mention}:\n"
+        leaderboard += f"Pontos: \t{user_info['pontos']}\n"
+        leaderboard += f"Vitórias: \t{user_info['vitorias']}\n"
+        leaderboard += f"Derrotas: \t{user_info['derrotas']}\n"
+        leaderboard += f"Winrate: \t{user_info['winrate']}%\n"
+
+        # Enviando a mensagem com as estatísticas
+        await message.channel.send(leaderboard)
+
+    if message.content.startswith('!bo'):
+        mensagem = f"{message.author.mention} Está te convidando: BORA X5? Conecte-se em uma das 🔀 Salas para jogar.\n\n\t\t@everyone"
+        confirm_message = await message.channel.send(mensagem)
+        await confirm_message.add_reaction("✅")
+        await confirm_message.add_reaction("❌")
 
     if message.content.startswith('!top'):
         top = tabela20(get_server_id(message.guild))
