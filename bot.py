@@ -129,8 +129,18 @@ async def x5(members, message, team_1_channel, team_2_channel):
         await x5(members, message, team_1_channel, team_2_channel)
         return
     else:
-        await message.channel.send("Separação de jogadores cancelada.")    
+        await message.channel.send("Separação de jogadores cancelada.")
 
+async def get_member_by_username(guild: discord.Guild, username: str) -> discord.Member:
+    # Use a função discord.utils.find() para procurar o membro pelo nome de usuário
+    member = discord.utils.find(lambda m: m.name == username, guild.members)
+    
+    # Se o membro for encontrado, retorne o objeto Member correspondente
+    if member is not None:
+        return member
+    
+    # Se o membro não for encontrado, levante uma exceção
+    raise ValueError(f"Member '{username}' not found in guild '{guild.name}'")
 
 @client.event
 async def on_ready():
@@ -331,9 +341,10 @@ async def on_message(message):
     if message.content.startswith('!top'):
         top = tabela20(get_server_id(message.guild))
         # Construir a tabela de classificação com os 20 primeiros colocados
-        leaderboard = "Top 20 do server:\n"
+        leaderboard = "Tabela do server:\n"
         for i, (username, user_data) in enumerate(top):
-            leaderboard += f"{i + 1}. {username}:\t\t Pontos: \t{user_data['pontos']}\t\t Vitórias: \t{user_data['vitorias']}\t\t Derrotas: \t{user_data['derrotas']}\t\t Winrate: \t{user_data['winrate']}%\n"
+            membro = await get_member_by_username(message.guild, username)
+            leaderboard += f"{i + 1}. {membro.mention}:\t\t Pontos: \t{user_data['pontos']}\t\t Vitórias: \t{user_data['vitorias']}\t\t Derrotas: \t{user_data['derrotas']}\t\t Winrate: \t{user_data['winrate']}%\n"
 
         # Enviar a tabela de classificação para o canal de chat
         await message.channel.send(leaderboard)
