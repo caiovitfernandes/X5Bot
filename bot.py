@@ -72,9 +72,9 @@ def balancear(members, id):
         if users[str(members[i].name)]["pontos"] > 0:
             if pontos1 != pontos2:
                 if pontos1 > pontos2:
-                    team_1.append(members[i])
-                else:
                     team_2.append(members[i])
+                else:
+                    team_1.append(members[i])
             else:
                 if len(team_1) > len(team_2):
                     team_2.append(members[i])
@@ -103,7 +103,7 @@ async def x5(members, message, team_1_channel, team_2_channel):
     team_1 = members[:len(members)//2]
     team_2 = members[len(members)//2:]
 
-    confirm_message = await message.channel.send(f'Separar os jogadores em equipes 1 e 2?\nEquipe 1: {", ".join([member.name for member in team_1])}\nEquipe 2: {", ".join([member.name for member in team_2])}')
+    confirm_message = await message.channel.send(f'Separar os jogadores em equipes 1 e 2?\nEquipe 1: {", ".join([member.mention for member in team_1])}\nEquipe 2: {", ".join([member.mention for member in team_2])}')
     await confirm_message.add_reaction("✅")
     await confirm_message.add_reaction("🔁")
     await confirm_message.add_reaction("❌")
